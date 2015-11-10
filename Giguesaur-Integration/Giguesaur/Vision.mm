@@ -12,7 +12,7 @@
 cv::Size boardSize(9,6);
 std::vector<cv::Point3f> corners;
 cv::Mat cameraMatrix, distCoeffs;
-cv::Mat input; // the puzzle image, who named it input?
+cv::Mat frame; // the puzzle image, who named it input?
 BOOL puzzleImageCopied = NO;
 std::vector<cv::Point2f> imagePlane;
 std::vector<cv::Point3f> polypoints;
@@ -27,7 +27,6 @@ static const unsigned char TEMP = 4;
 
 static const int array_size = 10000;
 static const unsigned char thresh = 120;
-static const int skip = 10;
 
 struct fill_queue{
     cv::Point2i queue[array_size];
@@ -62,7 +61,7 @@ fill_data temp_fill;
     UIImage* resImage = [UIImage imageWithContentsOfFile:filePath];
 
     //UIImage* resImage = self.graphics.puzzleImage;
-    input = [self cvMatFromUIImage:resImage];
+    frame = [self cvMatFromUIImage:resImage];
 
 
     self.graphics = graphics;
@@ -168,7 +167,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
         while(value >= lower && value < upper){
             //std::cout << "in backtrack loop" << std::endl;
             seed.y-=skip;
-            value = image.at<uchar>(seed.x, seed.y-1);
+            value = image.at<uchar>(seed.x, seed.y);
         }
         
         //might flip out if white near edges, UPDATE: Now start scanning from skip.
@@ -206,7 +205,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
             
             else{
                 temp_fill.white_pixels++;
-                input.at<cv::Vec3b>(seed.x,seed.y) = cv::Vec3b(0,0,255);
+                //input.at<cv::Vec3b>(seed.x,seed.y) = cv::Vec3b(0,0,255);
                 value = image.at<uchar>(seed.x, seed.y+skip);
                 if(run_start || !(value >= lower && value < upper)){
                     if(seed.x < temp_fill.min_x.x){
@@ -271,7 +270,8 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
              << temp_fill.black_list.size() << "\n" <<
              circ_queue.head << " " << circ_queue.tail << std::endl;*/
             seed.y += skip;
-        }while(image.at<uchar>(seed.x, seed.y) >= lower && image.at<uchar>(seed.x, seed.y) < upper);
+            //&& seed.x < 1080 && seed.y < 1920
+        }while(image.at<uchar>(seed.x, seed.y) >= lower && image.at<uchar>(seed.x, seed.y) < upper );
     }
     if(!white_flag){
         sum.x /= count;
@@ -285,7 +285,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
 - (void) calculatePose:(cv::Mat &)frame{
 
     if (self.graphics.puzzleStateRecieved && !puzzleImageCopied) {
-        input = [self cvMatFromUIImage:self.graphics.puzzleImage];
+        frame = [self cvMatFromUIImage:self.graphics.puzzleImage];
         puzzleImageCopied = YES;
     }
 
@@ -295,8 +295,8 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     cv::Mat rvec;
     cv::Mat tvec;
     cv::Mat rotation;
-    int width = input.cols;
-    int height = input.rows;
+    int width = frame.cols;
+    int height = frame.rows;
     bool vectors = false;
     /*bool patternfound = findChessboardCorners(frame, boardSize, pixelcorners,
                                               cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
@@ -304,7 +304,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     /*******************************/
     bool patternfound = false;
     cv::Mat image;
-    
+    static const int skip = 10;
     cv::cvtColor(frame, image, CV_BGR2GRAY);
     table = cv::Mat::zeros(image.rows,image.cols, CV_8UC1);
     //cv::imwrite("output.png", image);
@@ -328,6 +328,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                 //issue with 255 value, less than in algorithm
                 // std::cout << (int)image.at<uchar>(i,j) << std::endl;
                 count++;
+                std::cout << i << " " << j << std::endl;
                 //cv::Point centre(j,i);
                 // circle(input,centre,5,cv::Scalar(255,0,0),-1,8,0);
                 flood_fill(image, 140, 255, cv::Point2i(i,j), skip, true);
@@ -380,16 +381,16 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
      }*/
     /**************************/
     cv::Point centre((max_white.max_y.y + max_white.min_y.y) / 2, (max_white.max_x.x + max_white.min_x.x) /2);
-    circle(input,centre,3,cv::Scalar(255,0,0), -1,8,0);
+    circle(frame,centre,3,cv::Scalar(255,0,0), -1,8,0);
     
     cv::Point max_x(max_white.max_x.y, max_white.max_x.x);
     cv::Point max_y(max_white.max_y.y, max_white.max_y.x);
     cv::Point min_x(max_white.min_x.y, max_white.min_x.x);
     cv::Point min_y(max_white.min_y.y, max_white.min_y.x);
-    circle(input, max_x, 8, cv::Scalar(0,255,0), -1, 8, 0);
-    circle(input, max_y, 8, cv::Scalar(0,0,255), -1, 8, 0);
-    circle(input, min_x, 8, cv::Scalar(255,255,0), -1, 8, 0);
-    circle(input, min_y, 8, cv::Scalar(255,0,0), -1, 8, 0);
+    circle(frame, max_x, 8, cv::Scalar(0,255,0), -1, 8, 0);
+    circle(frame, max_y, 8, cv::Scalar(0,0,255), -1, 8, 0);
+    circle(frame, min_x, 8, cv::Scalar(255,255,0), -1, 8, 0);
+    circle(frame, min_y, 8, cv::Scalar(255,0,0), -1, 8, 0);
     
     /*std::cout <<"Green = Max x/row " << max_white.max_x <<
     "\nRed = max y/column " << max_white.max_y <<
@@ -492,7 +493,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
 
             cv::Point2f tempQuad = cv::Point2f(pieceCoords[piece][0].TexCoord[0]*width, pieceCoords[piece][0].TexCoord[1]*height);
             cv::Rect crop(tempQuad.x, tempQuad.y, width*self.graphics.texture_width, height*self.graphics.texture_height);
-            cv::Mat subImage = input(crop);
+            cv::Mat subImage = frame(crop);
 
             inputQuad[0] = cv::Point2f(0,0);
             inputQuad[1] = cv::Point2f(subImage.cols-1, 0);
