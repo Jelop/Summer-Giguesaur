@@ -39,7 +39,7 @@ struct fill_data{
     //made it non static, beware memory leak?
     std::vector<cv::Point2i> black_list;
     //might need to make min
-    cv::Point2i max_x, max_y, min_x, min_y, dot_tr, dot_br, dot_tl, dot_bl;
+    cv::Point2i max_x, max_y, min_x, min_y, max_x_p_y, min_x_m_y, min_x_p_y, max_x_m_y;
 };
 
 cv::Mat table;
@@ -208,6 +208,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                 //input.at<cv::Vec3b>(seed.x,seed.y) = cv::Vec3b(0,0,255);
                 value = image.at<uchar>(seed.x, seed.y+skip);
                 if(run_start || !(value >= lower && value < upper)){
+                    run_start = false;
                     if(seed.x < temp_fill.min_x.x){
                         temp_fill.min_x.x = seed.x;
                         temp_fill.min_x.y = seed.y;
@@ -216,8 +217,6 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                         temp_fill.min_y.y = seed.y;
                         temp_fill.min_y.x = seed.x;
                     }
-                    run_start = false;
-                    
                     if(seed.x > temp_fill.max_x.x){
                         temp_fill.max_x.x = seed.x;
                         temp_fill.max_x.y = seed.y;
@@ -225,6 +224,23 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                     if(seed.y > temp_fill.max_y.y){
                         temp_fill.max_y.y = seed.y;
                         temp_fill.max_y.x = seed.x;
+                    }
+                    
+                    if((seed.x + seed.y) > (temp_fill.max_x_p_y.x + temp_fill.max_x_p_y.y)){
+                        temp_fill.max_x_p_y.x = seed.x;
+                        temp_fill.max_x_p_y.y = seed.y;
+                    }
+                    if((seed.x - seed.y) < (temp_fill.min_x_m_y.x - temp_fill.min_x_m_y.y)){
+                        temp_fill.min_x_m_y.x = seed.x;
+                        temp_fill.min_x_m_y.y = seed.y;
+                    }
+                    if((seed.x + seed.y) < (temp_fill.min_x_p_y.x + temp_fill.min_x_p_y.y)){
+                        temp_fill.min_x_p_y.x = seed.x;
+                        temp_fill.min_x_p_y.y = seed.y;
+                    }
+                    if((seed.x - seed.y) > (temp_fill.max_x_m_y.x - temp_fill.max_x_m_y.y)){
+                        temp_fill.max_x_m_y.x = seed.x;
+                        temp_fill.max_x_m_y.y = seed.y;
                     }
                     
                     //might not be necessary
@@ -282,6 +298,15 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     return cv::Point2i(-1,-1);
 }
 
+- (void) calculateCharacteristics:(cv::Mat &)frame{
+    
+    int regularChar[4];
+    int rotatedChar[4];
+    
+    regularChar[0] = max_white.max_x.y - max_white.min_x.y;
+    regularChar[1] = max_white.m
+}
+
 - (void) calculatePose:(cv::Mat &)frame{
 
     if (self.graphics.puzzleStateRecieved && !puzzleImageCopied) {
@@ -313,12 +338,21 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     max_white.max_y = cv::Point2i(0,0);
     max_white.min_x = cv::Point2i(4000,4000);
     max_white.min_y = cv::Point2i(4000,4000);
-    
+    max_white.max_x_p_y = cv::Point2i(0,0);
+    max_white.min_x_m_y = cv::Point2i(4000,4000);
+    max_white.min_x_p_y = cv::Point2i(4000,4000);
+    max_white.max_x_m_y = cv::Point2i(0,0);
+    //POTENTIALLY CHOSE BAD INITIAL VALUES FOR ROTATED COORDINATE SYSTEM
     temp_fill.white_pixels = 0;
     temp_fill.max_x = cv::Point2i(0,0);
     temp_fill.max_y = cv::Point2i(0,0);
     temp_fill.min_x = cv::Point2i(4000,4000);
     temp_fill.min_y = cv::Point2i(4000,4000);
+    temp_fill.max_x_p_y = cv::Point2i(0,0);
+    temp_fill.min_x_m_y = cv::Point2i(4000,4000);
+    temp_fill.min_x_p_y = cv::Point2i(4000,4000);
+    temp_fill.max_x_m_y = cv::Point2i(0,0);
+    
     int count = 0;
     //clock_t startTime = clock();
     for(int i = skip; i < image.rows-skip; i+=skip){
@@ -341,6 +375,10 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                 temp_fill.max_y = cv::Point2i(0,0);
                 temp_fill.min_x = cv::Point2i(4000,4000);
                 temp_fill.min_y = cv::Point2i(4000,4000);
+                temp_fill.max_x_p_y = cv::Point2i(0,0);
+                temp_fill.min_x_m_y = cv::Point2i(4000,4000);
+                temp_fill.min_x_p_y = cv::Point2i(4000,4000);
+                temp_fill.max_x_m_y = cv::Point2i(0,0);
             }
         }
     }
@@ -349,6 +387,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     //calculate dot products, no point in doing it more than once.
     
     //this might not be neccesary anymore
+    /*
     for(int i = 0; i < table.rows; i++){
         for(int j = 0; j < table.cols; j++){
             unsigned char state = table.at<uchar>(i,j);
@@ -358,7 +397,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                 table.at<uchar>(i,j) = TEMP;
             }
         }
-    }
+    }*/
     
     /***********************/
     /*  std::vector<cv::Point2i>dots;
@@ -398,6 +437,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     "\nBlue = min y/column " << max_white.min_y << std::endl;
 
     */
+    
     
     
     /****************************************/

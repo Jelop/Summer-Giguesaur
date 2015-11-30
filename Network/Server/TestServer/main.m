@@ -298,6 +298,7 @@ void startServer(){
     NSDate *loseDate = [NSDate date];
     
     while (true){
+        printf("yo im allg");
         receiveMessage();
         sendBoard();
         if ([loseDate timeIntervalSinceNow] < -LOSEPIECE){
@@ -356,6 +357,7 @@ void chooseImage(){
     NSInteger result = [panel runModal];
     if (result == NSFileHandlingPanelOKButton){
         NSURL *theImage = [[panel URLs]objectAtIndex:0];
+        //[panel close];
         readImage(theImage);
     } else {
         NSLog(@"Error getting image");
@@ -374,14 +376,13 @@ int main(int argc, const char * argv[]) {
     players = [NSMutableArray array];
     heldPieces = [NSMutableArray array];
     generatePieces(pieces);
-
+    
     for (int i = 0; i < NUM_OF_PIECES; i++){
         [heldPieces addObject:[NSNull null]];
         
     }
     
     messagesSent = 0;
-    
     startServer();
     free(boardState);
     
