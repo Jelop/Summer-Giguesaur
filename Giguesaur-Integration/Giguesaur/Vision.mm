@@ -226,6 +226,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                         temp_fill.max_y.x = seed.x;
                     }
                     
+                    //might need to change x and y around as they are non cartesian. Probably makes a difference.
                     if((seed.x + seed.y) > (temp_fill.max_x_p_y.x + temp_fill.max_x_p_y.y)){
                         temp_fill.max_x_p_y.x = seed.x;
                         temp_fill.max_x_p_y.y = seed.y;
@@ -298,13 +299,111 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     return cv::Point2i(-1,-1);
 }
 
-- (void) calculateCharacteristics:(cv::Mat &)frame{
+ void calculateCharacteristics(cv::Mat &frame){
     
     int regularChar[4];
     int rotatedChar[4];
+    int a, b;
+    int regMin = 4000;
+    int rotMin = 4000;
     
-    regularChar[0] = max_white.max_x.y - max_white.min_x.y;
-    regularChar[1] = max_white.m
+    //regular characteristics
+    a = abs(max_white.min_x.x - max_white.min_y.x);
+    b = abs(max_white.min_x.y - max_white.min_y.y);
+    regularChar[0] = a < b ? a : b;
+    regMin = regularChar[0] < regMin ? regularChar[0] : regMin;
+    
+    a = abs(max_white.max_y.x - max_white.min_x.x);
+    b = abs(max_white.max_y.y - max_white.min_x.y);
+    regularChar[1] = a < b ? a : b;
+    regMin = regularChar[1] < regMin ? regularChar[1] : regMin;
+    
+    a = abs(max_white.max_x.x - max_white.max_y.x);
+    b = abs(max_white.max_x.y - max_white.max_y.y);
+    regularChar[2] = a < b ? a : b;
+    regMin = regularChar[2] < regMin ? regularChar[2] : regMin;
+    
+    a = abs(max_white.min_y.x - max_white.max_x.x);
+    b = abs(max_white.min_y.y - max_white.max_x.y);
+    regularChar[3] = a < b ? a : b;
+    regMin = regularChar[3] < regMin ? regularChar[3] : regMin;
+    
+    //rotated characteristics
+    a = abs(max_white.min_x_p_y.x - max_white.min_x_m_y.x);
+    b = abs(max_white.min_x_p_y.y - max_white.min_x_m_y.y);
+    rotatedChar[0] = a < b ? a : b;
+    rotMin = rotatedChar[0] < rotMin ? rotatedChar[0] : rotMin;
+    
+    a = abs(max_white.max_x_m_y.x - max_white.min_x_p_y.x);
+    b = abs(max_white.max_x_m_y.y - max_white.min_x_p_y.y);
+    rotatedChar[1] = a < b ? a : b;
+    rotMin = rotatedChar[1] < rotMin ? rotatedChar[1] : rotMin;
+    
+    a = abs(max_white.max_x_p_y.x - max_white.max_x_m_y.x);
+    b = abs(max_white.max_x_p_y.y - max_white.max_x_m_y.y);
+    rotatedChar[2] = a < b ? a : b;
+    rotMin = rotatedChar[2] < rotMin ? rotatedChar[2] : rotMin;
+    
+    a = abs(max_white.min_x_m_y.x - max_white.max_x_p_y.x);
+    b = abs(max_white.min_x_m_y.y - max_white.max_x_p_y.y);
+    rotatedChar[3] = a < b ? a : b;
+    rotMin = rotatedChar[3] < rotMin ? rotatedChar[3] : rotMin;
+     
+     std::cout << "reg " << std::endl;
+     for(int i = 0; i < 4; i ++){
+         std::cout << regularChar[i] <<  " ";
+     }
+     
+     std::cout << "\nrot " << std::endl;
+     for(int i = 0; i < 4; i ++){
+         std::cout << rotatedChar[i] << " ";
+     }
+     
+     
+    
+    rotMin *= 1/sqrt(2);
+     std::cout << "\nrotMin = " << rotMin << "\nregMin " << regMin << std::endl;
+     
+    
+    cv::Point2i corners[8];
+   // if(regMin < rotMin){
+        corners[0] = max_white.max_x_p_y;
+        corners[1] = max_white.min_x_m_y;
+        corners[2] = max_white.min_x_p_y;
+        corners[3] = max_white.max_x_m_y;
+     
+     corners[4] = max_white.max_y;
+     corners[5] = max_white.min_x;
+     corners[6] = max_white.min_y;
+     corners[7] = max_white.max_x;
+   // }
+    
+   /* else {
+        corners[0] = max_white.max_y;
+        corners[1] = max_white.min_x;
+        corners[2] = max_white.min_y;
+        corners[3] = max_white.max_x;
+    }*/
+    
+    cv::Point corner0(corners[0].y, corners[0].x);
+    cv::Point corner1(corners[1].y, corners[1].x);
+    cv::Point corner2(corners[2].y, corners[2].x);
+    cv::Point corner3(corners[3].y, corners[3].x);
+     
+     cv::Point corner4(corners[4].y, corners[4].x);
+     cv::Point corner5(corners[5].y, corners[5].x);
+     cv::Point corner6(corners[6].y, corners[6].x);
+     cv::Point corner7(corners[7].y, corners[7].x);
+    circle(frame, corner0, 8, cv::Scalar(0,255,0), -1, 8, 0);
+    circle(frame, corner1, 8, cv::Scalar(0,0,255), -1, 8, 0);
+    circle(frame, corner2, 8, cv::Scalar(255,255,0), -1, 8, 0);
+    circle(frame, corner3, 8, cv::Scalar(255,0,0), -1, 8, 0);
+     
+     circle(frame, corner4, 8, cv::Scalar(0,0,0), -1, 8, 0);
+     circle(frame, corner5, 8, cv::Scalar(0,0,0), -1, 8, 0);
+     circle(frame, corner6, 8, cv::Scalar(0,0,0), -1, 8, 0);
+     circle(frame, corner7, 8, cv::Scalar(0,0,0), -1, 8, 0);
+    
 }
 
 - (void) calculatePose:(cv::Mat &)frame{
@@ -362,7 +461,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
                 //issue with 255 value, less than in algorithm
                 // std::cout << (int)image.at<uchar>(i,j) << std::endl;
                 count++;
-                std::cout << i << " " << j << std::endl;
+                //std::cout << i << " " << j << std::endl;
                 //cv::Point centre(j,i);
                 // circle(input,centre,5,cv::Scalar(255,0,0),-1,8,0);
                 flood_fill(image, 140, 255, cv::Point2i(i,j), skip, true);
@@ -421,7 +520,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     /**************************/
     cv::Point centre((max_white.max_y.y + max_white.min_y.y) / 2, (max_white.max_x.x + max_white.min_x.x) /2);
     circle(frame,centre,3,cv::Scalar(255,0,0), -1,8,0);
-    
+    /*
     cv::Point max_x(max_white.max_x.y, max_white.max_x.x);
     cv::Point max_y(max_white.max_y.y, max_white.max_y.x);
     cv::Point min_x(max_white.min_x.y, max_white.min_x.x);
@@ -430,7 +529,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
     circle(frame, max_y, 8, cv::Scalar(0,0,255), -1, 8, 0);
     circle(frame, min_x, 8, cv::Scalar(255,255,0), -1, 8, 0);
     circle(frame, min_y, 8, cv::Scalar(255,0,0), -1, 8, 0);
-    
+    */
     /*std::cout <<"Green = Max x/row " << max_white.max_x <<
     "\nRed = max y/column " << max_white.max_y <<
     "\nCyan = min x/row " << max_white.min_x <<
@@ -438,7 +537,7 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
 
     */
     
-    
+    calculateCharacteristics(frame);
     
     /****************************************/
     SimpleMath *simpleMath = [[SimpleMath alloc] init];

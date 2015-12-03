@@ -298,7 +298,6 @@ void startServer(){
     NSDate *loseDate = [NSDate date];
     
     while (true){
-        printf("yo im allg");
         receiveMessage();
         sendBoard();
         if ([loseDate timeIntervalSinceNow] < -LOSEPIECE){
