@@ -11,7 +11,7 @@
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>1644B812076777FF6B9B78767F105F05F850C5D0</key>
-		<string>https://github.com/ShahneRodgers/Giguesaur</string>
+		<string>https://github.com/Jelop/Summer-Giguesaur.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Giguesaur-Integration/Giguesaur.xcodeproj</string>
@@ -21,7 +21,7 @@
 		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://github.com/ShahneRodgers/Giguesaur</string>
+	<string>https://github.com/Jelop/Summer-Giguesaur.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
@@ -34,7 +34,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>1644B812076777FF6B9B78767F105F05F850C5D0</string>
 			<key>IDESourceControlWCCName</key>
-			<string>Giguesaur</string>
+			<string>Summer-Giguesaur</string>
 		</dict>
 	</array>
 </dict>

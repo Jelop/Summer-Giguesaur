@@ -361,24 +361,24 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
      
      
     
-    rotMin *= 1/sqrt(2);
+     rotMin *= 1/sqrt(2);
      std::cout << "\nrotMin = " << rotMin << "\nregMin " << regMin << std::endl;
      
     
     cv::Point2i corners[8];
-   // if(regMin < rotMin){
+   //if(regMin < rotMin){
         corners[0] = max_white.max_x_p_y;
         corners[1] = max_white.min_x_m_y;
         corners[2] = max_white.min_x_p_y;
         corners[3] = max_white.max_x_m_y;
      
-     corners[4] = max_white.max_y;
+    corners[4] = max_white.max_y;
      corners[5] = max_white.min_x;
      corners[6] = max_white.min_y;
      corners[7] = max_white.max_x;
-   // }
+  /* }
     
-   /* else {
+    else {
         corners[0] = max_white.max_y;
         corners[1] = max_white.min_x;
         corners[2] = max_white.min_y;
@@ -394,9 +394,9 @@ cv::Point2i flood_fill(cv::Mat image, unsigned char lower, unsigned char upper, 
      cv::Point corner5(corners[5].y, corners[5].x);
      cv::Point corner6(corners[6].y, corners[6].x);
      cv::Point corner7(corners[7].y, corners[7].x);
-    circle(frame, corner0, 8, cv::Scalar(0,255,0), -1, 8, 0);
-    circle(frame, corner1, 8, cv::Scalar(0,0,255), -1, 8, 0);
-    circle(frame, corner2, 8, cv::Scalar(255,255,0), -1, 8, 0);
+    circle(frame, corner0, 8, cv::Scalar(255,0,0), -1, 8, 0);
+    circle(frame, corner1, 8, cv::Scalar(255,0,0), -1, 8, 0);
+    circle(frame, corner2, 8, cv::Scalar(255,0,0), -1, 8, 0);
     circle(frame, corner3, 8, cv::Scalar(255,0,0), -1, 8, 0);
      
      circle(frame, corner4, 8, cv::Scalar(0,0,0), -1, 8, 0);
